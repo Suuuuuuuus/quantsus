@@ -1,4 +1,4 @@
-quantsus: A Python package for Sus's quant analyses
+Quantsus: A Python package for Sus's quant analyses
 =======================================
 
 Quantsus.

@@ -20,10 +20,8 @@ from matplotlib.ticker import FuncFormatter
 import seaborn as sns
 import mplfinance as mpf
 
-from .auxiliary import *
-from .strategy import *
-from .variables import *
-from .process import *
+
+from .variable import *
 
 __all__ = [
     "mpf_plot_day_candle"

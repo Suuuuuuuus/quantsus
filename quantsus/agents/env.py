@@ -24,7 +24,7 @@ class SusTradingEnv:
 
     # ---------- action handling ----------
 
-    def action_to_positions(self, action, prices, risk_scale=0.95):
+    def action_to_positions(self, action, prices, risk_scale=1):
         equity = self.account.cash
 
         action = np.tanh(action)
@@ -44,7 +44,7 @@ class SusTradingEnv:
         prices = self.data.close.iloc[self.t].values
         next_prices = self.data.close.iloc[self.t + 1].values
 
-        # ✅ store equity BEFORE pnl
+        # store equity BEFORE pnl
         equity_before = self.account.cash
 
         # 1. action → target positions
@@ -52,14 +52,19 @@ class SusTradingEnv:
 
         # 2. delta (for penalty)
         delta = target_positions - self.account.positions
-
+        
         # 3. execute trade (this updates equity internally)
         result = self.exec_engine.rebalance(target_positions, prices, next_prices)
 
         pnl = result["net_pnl"]
 
+        same_direction = np.sign(target_positions) == np.sign(self.account.positions)
+        abs_delta = np.abs(delta)
+
+        penalty = self.position_change_penalty * np.sum(
+            same_direction * np.maximum(0, 1 - abs_delta)
+        )
         # 4. reward
-        penalty = self.position_change_penalty * np.sum(np.abs(delta))
 
         reward = (pnl - penalty) / (equity_before + 1e-8)
 
@@ -82,6 +87,8 @@ class SusTradingEnv:
             "used_margin": self.account.used_margin,
             "available_margin": self.account.available_margin,
             "equity": self.account.cash,
+            "pnl": pnl,
+            "positions": target_positions
         }
 
     # ---------- reset ----------

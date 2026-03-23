@@ -56,7 +56,7 @@ class SusExecutionEngine:
     def rebalance(self, target_positions, prices, next_prices):
         old_positions = self.account.positions.copy()
 
-        # 🔥 IMPORTANT: PnL is earned BEFORE rebalancing
+        # IMPORTANT: PnL is earned BEFORE rebalancing
         pnl = self.compute_pnl(old_positions, prices, next_prices)
 
         # --- round + compute delta ---
@@ -102,6 +102,7 @@ class SusExecutionEngine:
         return {
             "pnl": pnl,
             "costs": costs,
+            "positions": target_positions,
             "net_pnl": net_pnl,
             "delta": delta,
             "close_qty": close_qty,

@@ -6,6 +6,7 @@ from .core.feature_engine import SusFeatureEngine
 from .core.assets import SusAssetParameters
 from .agents.sac_agent import SACAgent
 from .agents.env import SusTradingEnv
+from .metrics.analyzer import SusPerformanceAnalyzer
 
 from .factors.vwap import *
 from .utils.plot import *
@@ -16,5 +17,5 @@ __version__ = "0.0.1"
 __all__ = [
     "SusLoadCsvs", "SusMarketData", "SusAccount", 
     "SusExecutionEngine", "SusFeatureEngine", "SusAssetParameters",
-    "SusTradingEnv", "SACAgent", "vwap_signal"
+    "SusTradingEnv", "SACAgent", "SusPerformanceAnalyzer", "vwap_signal"
 ]

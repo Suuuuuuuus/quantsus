@@ -24,86 +24,69 @@ class SusTradingEnv:
 
     # ---------- action handling ----------
 
-    def action_to_positions(self, action, prices):
-        equity = self.account.equity(prices, self.exec_engine.multipliers)
-        max_notional = equity * self.leverage
-        action = action / (np.sum(np.abs(action)) + 1e-8)
-        target_notional = action * max_notional
+    def action_to_positions(self, action, prices, risk_scale=0.95):
+        equity = self.account.cash
+
+        action = np.tanh(action)
+        target_notional = action * equity * risk_scale * self.leverage
         positions = target_notional / (prices * self.exec_engine.multipliers)
+
         return positions
-
-    def scale_to_margin(self, target_positions, prices):
-        margin = self.exec_engine.margin_used(target_positions, prices)
-        equity = self.account.equity(prices, self.exec_engine.multipliers)
-
-        if margin == 0:
-            return target_positions
-
-        scale = equity / margin
-        return target_positions * scale
 
     # ---------- state ----------
 
     def get_state(self):
-        feature_vec = self.feature_engine.get_state(self.t)
-
-        positions = self.account.positions
-        prices = self.data.close.iloc[self.t].values
-
-        margin_ratio = self.exec_engine.margin_ratio(positions, prices)
-
-        return np.concatenate([
-            feature_vec,
-            positions,
-            [margin_ratio]
-        ])
+        return self.feature_engine.get_state(self.t)
 
     # ---------- step ----------
 
-    def step(self, action, liquidation_reward = LIQUIDATION_REWARD):
+    def step(self, action, liquidation_reward=LIQUIDATION_REWARD):
         prices = self.data.close.iloc[self.t].values
         next_prices = self.data.close.iloc[self.t + 1].values
+
+        # ✅ store equity BEFORE pnl
+        equity_before = self.account.cash
 
         # 1. action → target positions
         target_positions = self.action_to_positions(action, prices)
 
-        # 2. enforce margin (soft constraint)
-        if not self.exec_engine.is_margin_safe(target_positions, prices):
-            target_positions = self.scale_to_margin(target_positions, prices)
-
-        # 3. delta (for penalty)
+        # 2. delta (for penalty)
         delta = target_positions - self.account.positions
 
-        # 4. execute trade
+        # 3. execute trade (this updates equity internally)
         result = self.exec_engine.rebalance(target_positions, prices, next_prices)
 
         pnl = result["net_pnl"]
 
-        # 5. reward (PnL - trading penalty)
+        # 4. reward
         penalty = self.position_change_penalty * np.sum(np.abs(delta))
-        reward = pnl - penalty
 
-        # 6. check liquidation (hard constraint)
+        reward = (pnl - penalty) / (equity_before + 1e-8)
+
+        # 5. liquidation check
         liquidated = self.exec_engine.is_liquidated(
             self.account.positions,
             next_prices,
             self.liquidation_level
         )
 
-        if liquidated:
+        if liquidated and self.t < len(self.data.close) - 1:
             reward = liquidation_reward
 
-        # 7. advance time
+        # 6. advance time
         self.t += 1
-        if self.t >= len(self.data.close) - 1:
+        if self.t >= len(self.data.close) - 1 - self.feature_engine.window_size:
             liquidated = True
 
-        return self.get_state(), reward, liquidated, {}
+        return self.get_state(), reward, liquidated, {
+            "used_margin": self.account.used_margin,
+            "available_margin": self.account.available_margin,
+            "equity": self.account.cash,
+        }
 
     # ---------- reset ----------
 
     def reset(self):
         self.t = 0
         self.account.reset(self.n_assets)
-
         return self.get_state()

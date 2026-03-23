@@ -11,7 +11,6 @@ class SusFeatureEngine:
         self.feature_names = feature_names or list(features.keys())
         self.window_size = window_size
 
-        # infer dimensions
         sample_df = features[self.feature_names[0]]
         sample_val = sample_df.iloc[0]
 

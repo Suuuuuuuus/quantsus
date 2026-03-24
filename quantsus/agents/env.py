@@ -87,7 +87,7 @@ class SusTradingEnv:
             "used_margin": self.account.used_margin,
             "available_margin": self.account.available_margin,
             "equity": self.account.cash,
-            "pnl": pnl,
+            "pct_pnl": result["pct_pnl"],
             "positions": target_positions
         }
 

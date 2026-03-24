@@ -8,14 +8,15 @@ from .agents.sac_agent import SACAgent
 from .agents.env import SusTradingEnv
 from .metrics.analyzer import SusPerformanceAnalyzer
 
-from .factors.vwap import *
-from .utils.plot import *
-from .utils.strategy import *
+from .features.factors import *
 
 __version__ = "0.0.1"
 
 __all__ = [
     "SusLoadCsvs", "SusMarketData", "SusAccount", 
     "SusExecutionEngine", "SusFeatureEngine", "SusAssetParameters",
-    "SusTradingEnv", "SACAgent", "SusPerformanceAnalyzer", "vwap_signal"
+    "SusTradingEnv", "SACAgent", "SusPerformanceAnalyzer",
+
+    "build_features", "vwap", "log_return", "normalized_log_volume",
+    "time_sin_hour"
 ]

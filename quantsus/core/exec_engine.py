@@ -84,6 +84,7 @@ class SusExecutionEngine:
         costs = close_costs + open_costs
 
         net_pnl = pnl - costs
+        pct_pnl = net_pnl / self.account.cash
 
         # --- update equity (cash) ---
         self.account.cash += net_pnl
@@ -101,6 +102,7 @@ class SusExecutionEngine:
 
         return {
             "pnl": pnl,
+            "pct_pnl": pct_pnl,
             "costs": costs,
             "positions": target_positions,
             "net_pnl": net_pnl,

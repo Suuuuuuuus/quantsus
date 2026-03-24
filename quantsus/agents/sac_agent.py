@@ -17,6 +17,9 @@ class SACAgent:
         
         self.device = torch.device(device)
 
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+
         # networks
         self.actor = Actor(state_dim, action_dim).to(self.device)
         self.critic1 = Critic(state_dim, action_dim).to(self.device)
@@ -119,3 +122,56 @@ class SACAgent:
 
         for param, target_param in zip(self.critic2.parameters(), self.target_critic2.parameters()):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
+
+
+def save_sac(agent, path):
+    """
+    Save SAC agent weights and optimizer states.
+    """
+    checkpoint = {
+        "state_dim": agent.state_dim,
+        "action_dim": agent.action_dim,
+        "actor_state_dict": agent.actor.state_dict(),
+        "critic1_state_dict": agent.critic1.state_dict(),
+        "critic2_state_dict": agent.critic2.state_dict(),
+        "target_critic1_state_dict": agent.target_critic1.state_dict(),
+        "target_critic2_state_dict": agent.target_critic2.state_dict(),
+        "actor_opt_state_dict": agent.actor_opt.state_dict(),
+        "critic1_opt_state_dict": agent.critic1_opt.state_dict(),
+        "critic2_opt_state_dict": agent.critic2_opt.state_dict(),
+        "log_alpha": agent.log_alpha,
+        "alpha_opt_state_dict": agent.alpha_opt.state_dict(),
+        "gamma": agent.gamma,
+        "tau": agent.tau,
+    }
+    
+    torch.save(checkpoint, path)
+    print(f"SAC agent saved to {path}")
+    return None
+
+def load_sac(path, device="cpu"):
+    """
+    Load a saved SAC checkpoint into an existing agent.
+    """
+    checkpoint = torch.load(path, map_location=device)
+    agent = SACAgent(state_dim=checkpoint["state_dim"], action_dim=checkpoint["action_dim"], device=device)
+    
+    agent.actor.load_state_dict(checkpoint["actor_state_dict"])
+    agent.critic1.load_state_dict(checkpoint["critic1_state_dict"])
+    agent.critic2.load_state_dict(checkpoint["critic2_state_dict"])
+    agent.target_critic1.load_state_dict(checkpoint["target_critic1_state_dict"])
+    agent.target_critic2.load_state_dict(checkpoint["target_critic2_state_dict"])
+    
+    agent.actor_opt.load_state_dict(checkpoint["actor_opt_state_dict"])
+    agent.critic1_opt.load_state_dict(checkpoint["critic1_opt_state_dict"])
+    agent.critic2_opt.load_state_dict(checkpoint["critic2_opt_state_dict"])
+    
+    agent.log_alpha = checkpoint["log_alpha"]
+    agent.alpha_opt.load_state_dict(checkpoint["alpha_opt_state_dict"])
+    
+    agent.gamma = checkpoint["gamma"]
+    agent.tau = checkpoint["tau"]
+    
+    print(f"SAC agent loaded from {path}")
+    return agent

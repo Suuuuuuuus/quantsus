@@ -9,6 +9,7 @@ from .agents.env import SusTradingEnv
 from .metrics.analyzer import SusPerformanceAnalyzer
 from .time.timer import SusTimer
 
+from .util.utils import *
 from .features.factors import *
 
 __version__ = "0.0.1"
@@ -21,5 +22,7 @@ __all__ = [
     "SusTimer",
 
     "build_features", "vwap", "log_return", "normalized_log_volume",
-    "time_sin_hour"
+    "time_sin_hour",
+
+    "make_trading_env"
 ]

@@ -44,49 +44,48 @@ class SusTradingEnv:
         prices = self.data.close.iloc[self.t].values
         next_prices = self.data.close.iloc[self.t + 1].values
 
-        # store equity BEFORE pnl
-        equity_before = self.account.cash
+        prev_equity = self.account.cash
+        prev_positions = self.account.positions
 
-        # 1. action → target positions
-        target_positions = self.action_to_positions(action, prices)
 
-        # 2. delta (for penalty)
-        delta = target_positions - self.account.positions
-        
-        # 3. execute trade (this updates equity internally)
+        target_positions = self.action_to_positions(action, prices)        
         result = self.exec_engine.rebalance(target_positions, prices, next_prices)
 
+        target_positions = result['positions']
         pnl = result["net_pnl"]
+        delta = target_positions - prev_positions
 
-        same_direction = np.sign(target_positions) == np.sign(self.account.positions)
+        same_direction = np.sign(target_positions) == np.sign(prev_positions)
         abs_delta = np.abs(delta)
 
         penalty = self.position_change_penalty * np.sum(
             same_direction * np.maximum(0, 1 - abs_delta)
         )
-        # 4. reward
 
-        reward = (pnl - penalty) / (equity_before + 1e-8)
+        reward = (pnl - penalty) / (prev_equity + 1e-8)
 
-        # 5. liquidation check
         liquidated = self.exec_engine.is_liquidated(
             self.account.positions,
             next_prices,
             self.liquidation_level
         )
 
+        curr_timestamp = self.data.close.index[self.t]
+
         if liquidated and self.t < len(self.data.close) - 1:
             reward = liquidation_reward
 
         # 6. advance time
         self.t += 1
-        if self.t >= len(self.data.close) - 1 - self.feature_engine.window_size:
+        # if self.t >= len(self.data.close) - 1 - self.feature_engine.window_size:
+        if self.t >= len(self.data.close) - 1:
             liquidated = True
 
         return self.get_state(), reward, liquidated, {
-            "used_margin": self.account.used_margin,
-            "available_margin": self.account.available_margin,
+            "time": curr_timestamp,
             "equity": self.account.cash,
+            "penalty": penalty,
+            "net_pnl": pnl,
             "pct_pnl": result["pct_pnl"],
             "positions": target_positions
         }

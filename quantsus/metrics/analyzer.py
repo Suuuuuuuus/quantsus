@@ -11,7 +11,7 @@ class SusPerformanceAnalyzer:
         # Store history as a list of dicts initially
         self.history = []
 
-    def evaluate(self, returns):
+    def evaluate(self, returns, reward):
         """
         Compute performance metrics for a single episode and store in history.
         
@@ -27,7 +27,8 @@ class SusPerformanceAnalyzer:
             "max_drawdown": max_drawdown(returns),
             "win_rate": win_rate(returns),
             "volatility": volatility(returns),
-            "calmar_ratio": calmar_ratio(returns)
+            "calmar_ratio": calmar_ratio(returns),
+            "reward": reward
         }
 
         self.history.append(metrics)

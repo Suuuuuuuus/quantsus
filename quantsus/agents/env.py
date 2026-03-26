@@ -83,6 +83,7 @@ class SusTradingEnv:
 
         return self.get_state(), reward, liquidated, {
             "time": curr_timestamp,
+            "costs": result["costs"],
             "equity": self.account.cash,
             "penalty": penalty,
             "net_pnl": pnl,

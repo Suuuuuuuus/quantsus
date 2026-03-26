@@ -8,10 +8,9 @@ import numpy as np
 
 class SusPerformanceAnalyzer:
     def __init__(self):
-        # Store history as a list of dicts initially
         self.history = []
 
-    def evaluate(self, returns, reward):
+    def evaluate(self, sim_history_df):
         """
         Compute performance metrics for a single episode and store in history.
         
@@ -20,7 +19,10 @@ class SusPerformanceAnalyzer:
         Returns:
             metrics: dict with calculated metrics
         """
-        returns = np.array(returns)
+
+        returns = sim_history_df['pct_pnl'].to_numpy()
+        reward = sim_history_df['reward'].sum()
+  
         metrics = {
             "final_pnl": final_pnl(returns),
             "sharpe": sharpe_ratio(returns),

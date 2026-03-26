@@ -1,9 +1,9 @@
 import numpy as np
 import torch
-
+from .variable import *
 
 class ReplayBuffer:
-    def __init__(self, state_dim, action_dim, size=500):
+    def __init__(self, state_dim, action_dim, size=REPLAY_BUFFER_SIZE):
         self.ptr = 0
         self.size = 0
         self.max_size = size

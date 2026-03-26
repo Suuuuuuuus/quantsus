@@ -16,7 +16,6 @@ class SACAgent:
                  decay_gamma = DECAY_GAMMA, network_update_tau = NETWORK_UPDATE_TAU):
         
         self.device = torch.device(device)
-
         self.state_dim = state_dim
         self.action_dim = action_dim
 
@@ -39,8 +38,7 @@ class SACAgent:
         self.log_alpha = torch.zeros(1, requires_grad=True, device=device)
         self.alpha_opt = optim.Adam([self.log_alpha], lr=learn_rate)
         self.target_entropy = -action_dim
-
-        # replay buffer
+        
         self.buffer = ReplayBuffer(state_dim, action_dim)
 
         # hyperparams

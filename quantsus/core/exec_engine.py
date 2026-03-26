@@ -20,7 +20,10 @@ class SusExecutionEngine:
     # ---------- helpers ----------
 
     def round_positions(self, target_positions):
-        return np.round(target_positions / self.min_units) * self.min_units
+        result = np.round(target_positions / self.min_units) * self.min_units
+        
+        decimals = max(0, -int(np.log10(self.min_units)))
+        return np.round(result, decimals=decimals)
 
     def compute_costs(self, delta, prices):
         notional = np.abs(delta * prices * self.multipliers)
@@ -78,7 +81,6 @@ class SusExecutionEngine:
         close_dir = -np.sign(old_positions)
         open_dir = np.sign(delta)
 
-        # --- costs ---
         close_costs = self.compute_costs(close_qty * close_dir, prices)
         open_costs = self.compute_costs(open_qty * open_dir, prices)
         costs = close_costs + open_costs

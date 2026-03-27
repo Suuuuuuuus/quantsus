@@ -22,7 +22,8 @@ __all__ = [
     "SusTimer",
 
     "build_features", "vwap", "log_return", "normalized_log_volume",
-    "time_sin_hour",
+    "intraday_time_sin", "intraday_time_cos",
+    "average_true_range", "relative_strength_index", "average_directional_index",
 
     "make_trading_env"
 ]

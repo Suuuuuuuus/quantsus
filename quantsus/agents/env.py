@@ -36,7 +36,10 @@ class SusTradingEnv:
     # ---------- state ----------
 
     def get_state(self):
-        return self.feature_engine.get_state(self.t)
+        market_state = self.feature_engine.get_state(self.t)
+        account_state = self.account.positions
+        state = np.concatenate([market_state, account_state], axis=0)
+        return state
 
     # ---------- step ----------
 

@@ -344,3 +344,58 @@ for ep in range(epochs):
 
     print(f"Epoch {ep} TEST  | PnL: {test_pnl:.2%} | Sharpe: {test_metrics['sharpe']:.3f}")
     print("-" * 50)
+
+## 20260327
+
+n_epochs = 101
+
+Xtraine3 = pd.read_csv('results/20260324_VWAP_SAC_XAUUSD/window5_penaltye0/train_metrics.csv')
+Xteste3 = pd.read_csv('results/20260324_VWAP_SAC_XAUUSD/window5_penaltye0/test_metrics.csv')
+Xtraine2 = pd.read_csv('results/20260324_VWAP_SAC_XAUUSD/window5_penaltye2/train_metrics.csv')
+Xteste2 = pd.read_csv('results/20260324_VWAP_SAC_XAUUSD/window5_penaltye2/test_metrics.csv')
+Xtraine1 = pd.read_csv('results/20260324_VWAP_SAC_XAUUSD/window5_penaltye1/train_metrics.csv')
+Xteste1 = pd.read_csv('results/20260324_VWAP_SAC_XAUUSD/window5_penaltye1/test_metrics.csv')
+
+xaxis = np.arange(n_epochs)
+
+fig, axes = plt.subplots(3, 4, figsize=(18, 15))
+
+xaxis = np.arange(101)
+axes[0, 0].set_title('Position change penalty: 1e3')
+axes[0, 0].plot(xaxis, Xtraine3['final_pnl'], label = 'pnl')
+axes[0, 2].plot(xaxis, Xteste3['final_pnl'], label = 'pnl')
+axes[0, 1].plot(xaxis, Xtraine3['reward'], color = 'orange', label = 'reward')
+axes[0, 3].plot(xaxis, Xteste3['reward'], color = 'orange', label = 'reward')
+axes[0, 0].legend()
+axes[0, 2].legend()
+axes[0, 1].legend()
+axes[0, 3].legend()
+
+axes[1, 0].set_title('Position change penalty: 1e2')
+axes[1, 0].plot(xaxis, Xtraine2['final_pnl'], label = 'pnl')
+axes[1, 2].plot(xaxis, Xteste2['final_pnl'], label = 'pnl')
+axes[1, 1].plot(xaxis, Xtraine2['reward'], color = 'orange', label = 'reward')
+axes[1, 3].plot(xaxis, Xteste2['reward'], color = 'orange', label = 'reward')
+axes[1, 0].legend()
+axes[1, 2].legend()
+axes[1, 1].legend()
+axes[1, 3].legend()
+
+axes[2, 0].set_title('Position change penalty: 1e1')
+axes[2, 0].plot(xaxis, Xtraine1['final_pnl'], label = 'pnl')
+axes[2, 2].plot(xaxis, Xteste1['final_pnl'], label = 'pnl')
+axes[2, 1].plot(xaxis, Xtraine1['reward'], color = 'orange', label = 'reward')
+axes[2, 3].plot(xaxis, Xteste1['reward'], color = 'orange', label = 'reward')
+axes[2, 0].legend()
+axes[2, 2].legend()
+axes[2, 1].legend()
+axes[2, 3].legend()
+
+vwap = env_train.feature_engine.features['vwap_spread']
+sim_history = sim_history.set_index('time')
+sim_history.index.name = ''
+sim_history = pd.merge(sim_history, vwap, left_index = True, right_index = True)
+x['sign_pos'] = np.sign(x['positions'].str[0])
+x['sign_signal'] = np.sign(x['XAUUSD'])
+x['sign_corr'] = x["sign_pos"].rolling(24).corr(x["sign_signal"]).fillna(0)
+x

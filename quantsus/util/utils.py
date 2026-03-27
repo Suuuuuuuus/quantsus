@@ -16,7 +16,7 @@ def make_trading_env(
     feature_specs: List[Tuple[str, Callable]],
     feature_window_size: int = 5,
     initial_cash: float = 1e5,
-    position_penalty: float = 0.5
+    position_penalty: float = 100
 ):
     """
     Build a complete trading environment with account, execution, features, and env.
@@ -28,7 +28,7 @@ def make_trading_env(
         analyzer: SusPerformanceAnalyzer
     """
     # --- Account & Execution Engine ---
-    account = SusAccount()
+    account = SusAccount(initial_cash = initial_cash)
     account.reset(len(assets))
     
     exec_engine = SusExecutionEngine(assets, account)

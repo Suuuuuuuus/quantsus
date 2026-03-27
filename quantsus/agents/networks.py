@@ -4,10 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from .variable import *
 
-LOG_STD_MIN = -20
-LOG_STD_MAX = 2
-HIDDEN_DIM = 256
-
 class Actor(nn.Module):
     def __init__(self, state_dim, action_dim, hidden_dim=HIDDEN_DIM):
         super().__init__()
